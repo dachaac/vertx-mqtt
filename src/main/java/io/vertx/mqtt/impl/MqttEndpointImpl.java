@@ -668,6 +668,13 @@ public class MqttEndpointImpl implements MqttEndpoint {
     }
   }
 
+  public boolean isSsl() {
+    synchronized (this.conn) {
+      this.checkClosed();
+      return conn.isSsl();
+    }
+  }
+
   public MqttEndpointImpl write(io.netty.handler.codec.mqtt.MqttMessage mqttMessage) {
     synchronized (this.conn) {
       this.checkClosed();
