@@ -76,7 +76,7 @@ public class MqttServerClientCertSslTest extends MqttServerBaseTest {
       .setKeyCertOptions(pemKeyCertOptions)
       .setTrustOptions(pemTrustOptions)
       .setSsl(true)
-      .setClientAuth(ClientAuth.REQUEST);
+      .setClientAuth(ClientAuth.REQUIRED);
 
     this.setUp(context, options);
   }
@@ -161,6 +161,54 @@ public class MqttServerClientCertSslTest extends MqttServerBaseTest {
     } catch (MqttException e) {
       context.assertTrue(false);
       e.printStackTrace();
+    } catch (Exception e) {
+      context.assertTrue(false);
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void clientWithoutCertificates(TestContext context) {
+
+    resetClientInfo();
+
+    this.async = context.async();
+
+    MqttClient client = null;
+
+    try {
+
+      MemoryPersistence persistence = new MemoryPersistence();
+      client = new MqttClient(String.format("ssl://%s:%d", MQTT_SERVER_HOST, MQTT_SERVER_TLS_PORT), "12345", persistence);
+
+      MqttConnectOptions options = new MqttConnectOptions();
+      options.setSocketFactory(this.getSocketFactory("/tls/client-truststore.jks", null));
+      client.setTimeToWait(1000);
+      client.connect(options);
+
+      context.assertTrue(false);
+/*
+      client.publish(MQTT_TOPIC, MQTT_MESSAGE.getBytes(), 0, false);
+
+      this.async.await();
+
+      client.disconnect();
+
+      context.assertTrue(this.clientConnectedWithSsl);
+      context.assertFalse(this.receivedClientCertificateValidated);
+      context.assertNull(receivedClientPeerCertificates);
+*/
+    } catch (MqttException e) {
+      context.assertTrue(e.getCause() instanceof SSLHandshakeException);
+
+      if (client != null && client.isConnected()) {
+        try {
+          client.disconnect();
+        } catch (MqttException e1) {
+          context.assertTrue(false);
+          e1.printStackTrace();
+        }
+      }
     } catch (Exception e) {
       context.assertTrue(false);
       e.printStackTrace();
