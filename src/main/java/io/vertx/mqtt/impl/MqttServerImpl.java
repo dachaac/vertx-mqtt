@@ -92,6 +92,7 @@ public class MqttServerImpl implements MqttServer {
       conn.init(h1, h2);
 
     });
+    server.exceptionHandler(h2);
     server.listen(port, host, ar -> listenHandler.handle(ar.map(this)));
     return this;
   }
